@@ -1,0 +1,225 @@
+<html>
+<head>
+  <title>Rendering primitives</title>
+  <!--<link rel="shortcut icon" type="image/png" href="../common/images/favicon.png" />-->
+
+  <!-- libraries -->
+  <!--<link rel="stylesheet" href="../common/lib/normalize.css">-->
+  <!--<script type="text/javascript" src="../common/lib/dat.gui.js"></script>-->
+
+  <!-- modules -->
+  <!--<script type="text/javascript" src="../common/js/utils.js"></script>-->
+
+  <!-- vertex shader -->
+
+  <script type="text/javascript" src="./webGLApp.js"></script>
+  <script type="text/javascript" src="./webGLModel.js"></script>
+  <script type="text/javascript" src="./shapes.js"></script>
+  <script type="text/javascript" src="./shapesWebGL.js"></script>
+  <script type="text/javascript" src="./geometry.js"></script>
+  
+  <script id="vertex-shader" type="x-shader/x-vertex">
+    #version 300 es
+    precision mediump float;
+
+    in vec3 aVertexPosition;
+    in vec3 aVertexColor;
+    uniform float uVertexPointSize;
+    uniform mat4 uModelViewMatrix;
+    smooth out vec4 vColor;
+
+    void main(void) {
+      vec4 pos = vec4(aVertexPosition,1.0);
+
+      gl_PointSize = uVertexPointSize;
+      gl_Position = uModelViewMatrix*pos;
+      vColor= vec4(aVertexColor,1.0);
+    }
+  </script>
+
+  <!-- fragment shader -->
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    #version 300 es
+    precision mediump float;
+    in vec4 vColor;
+    out vec4 fragColor;
+
+    void main(void) {
+      fragColor = vColor;
+    }
+  </script>
+
+  <script type="text/javascript">
+  
+    class MyWebGLMainAPP extends WebGLMainApp{
+    
+      constructor(){
+          super();
+          this.program = null;
+          this.model = null;
+
+      }
+
+      create(){
+        
+        // Cria um program
+        this.program = this.createProgram("vertex-shader","fragment-shader");
+        
+        //Criar as cores vermelho, verde e azul
+        const c0 = new Color(1.0,0.0,0.0);
+        const c1 = new Color(0.0,1.0,0.0);
+        const c2 = new Color(0.0,0.0,1.0);
+
+        //Define as variáveis attribute e uniform dos shaders
+        this.attribShaderVariables = {"aVertexPosition":"aVertexPosition","aVertexColor":"aVertexColor"};
+        this.uniformShaderVariables = ["uVertexPointSize","uModelViewMatrix"];
+
+        //Obtem a localização das variáveis no shader
+        this.setProgramAttribShaderVariablesLocation(this.program,this.attribShaderVariables);
+        this.setProgramUniformShaderVariablesLocation(this.program,this.uniformShaderVariables);
+
+        //Cria um ponto e obtem o modelo WebGL
+        const point = new WebGLPoint2d(this.gl,this.program,0.0,0.0,32,new Color(1.0,0.0,0.0));
+        this.pointModel = point.getWebGLModel();
+                                              
+        //Cria um triangulo e obtem um modelo WebGL
+        const triangle = new WebGLTriangle(this.gl, this.program, 
+                                           new Point2d(0.0,0.5,c0),
+                                           new Point2d(0.5,0.0,c1),
+                                           new Point2d(-0.5,0.0,c2),c0,true); 
+        this.triangleModel = triangle.getWebGLModel();
+
+        //Cria uma lista de pontos e obtem o modelo WebGL. É mais eficiente que instanciar um ponto por vez
+        const pointList = new WebGLPointList(this.gl, this.program);
+        pointList.push(new Point2d(0.0,-0.5,new Color(1.0,0.0,0.0),16));
+        pointList.push(new Point2d(-0.5,0.0,new Color(1.0,1.0,0.0),16));
+        pointList.push(new Point2d(0.5,0.0,new Color(0.0,1.0,1.0),16));
+        this.pointListModel = pointList.getWebGLModel();
+
+        //Cria uma lista de triangulos e obtem o modelo WebGL. É mais eficiente que definir um triangulo por vez
+        const triangleList = new WebGLTriangleList(this.gl,this.program,true);
+        triangleList.push(new Triangle(new Point2d(0.3,0.2,c0),new Point2d(0.1,-0.6,c1),new Point2d(0.5,-0.3,c2),c0,false));
+        triangleList.push(new Triangle(new Point2d(-0.1,-0.2,c0),new Point2d(0.7,-0.4,c1),new Point2d(-0.2,-0.3,c2),c1,false));
+        triangleList.push(new Triangle(new Point2d(0.5,0.7,c0),new Point2d(0.4,-0.2,c1),new Point2d(-0.5,0.3,c2),c2,false));
+        this.triangleListModel = triangleList.getWebGLModel();
+
+        //Cria um polígono. Não pode ser preenchido na implementação atual
+        const polygon = new WebGLPolygon(this.gl,this.program,c0,false);
+        polygon.push(new Point2d(0.0,0.5,c0));
+        polygon.push(new Point2d(0.8,0.0,c1));
+        polygon.push(new Point2d(0.6,-0.5,c0));
+        polygon.push(new Point2d(0.0,-0.5,c2));
+        polygon.push(new Point2d(-0.8,0.3,c0));
+        this.polygonModel = polygon.getWebGLModel();
+
+        //Cria um círculo
+        const circle = new WebGLCircle(this.gl,this.program,-0.5,0.0,0.2,c0,32,true,true);
+        this.circleModel = circle.getWebGLModel();
+
+        //Cria uma curva de Bézier
+        const controlPoints = new PointList();
+        controlPoints.push(new Point2d(-0.8,-0.5,c0,8));
+        controlPoints.push(new Point2d(-0.5,0.5,c1,8));
+        controlPoints.push(new Point2d(0.5,0.5,c2,8));
+        controlPoints.push(new Point2d(0.8,-0.5,c0,8));
+        const bezier = new WebGLBezier(this.gl,this.program,c1,controlPoints,3,32,false,false);
+        this.bezierModel = bezier.getWebGLModel();
+
+        //Cria uma curva BSpline. Requer um conjunto de pontos de controle e um vetor de nós
+        const controlPointsBSpline = new PointList();
+        controlPointsBSpline.push(new Point2d(-0.2,-0.5,c0,8));
+        controlPointsBSpline.push(new Point2d(-0.7,0.3,c1,8));
+        controlPointsBSpline.push(new Point2d(0.1,0.4,c2,8));
+        controlPointsBSpline.push(new Point2d(0.5,-0.8,c0,8));
+        controlPointsBSpline.push(new Point2d(0.8,0.8,c0,8));
+        
+        //O tamanho de vetor de nós é #knots = #controlPoints + degree + 1 
+        //Para passar pelo último e primeiro pontos deve-se repetir o primeiro e o último valor degree+1 vezes
+        //O valor inicial é 0 e o final é o último índice da lista de pontos de controle
+        const knots = [0,0,0,0,3,4,4,4,4];
+        const bspline = new WebGLBSpline(this.gl,this.program,c2,controlPointsBSpline,knots,3,64,false,false);
+        this.bsplineModel = bspline.getWebGLModel();
+        
+      }
+
+
+      draw() {
+
+        const angle = (10.0*Math.PI)/180.0;
+        const tx = 0.0;
+        const ty = 0.0;
+        const identMatrix4 = [1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0];
+        const modelViewMatrix = [ Math.cos(angle), Math.sin(angle), 0.0, 0.0,
+                                 -Math.sin(angle), Math.cos(angle), 0.0, 0.0,
+                                              0.0,             0.0, 1.0, 0.0,
+                                               tx,               ty, 0.0, 1.0];
+
+        const uniformShaderVariablesValues = {"uVertexPointSize":["1f",16.0],"uModelViewMatrix":["mat4",false,identMatrix4]};
+        const uniformShaderVariablesValues2 = {"uVertexPointSize":["1f",16.0],"uModelViewMatrix":["mat4",false,modelViewMatrix]};
+
+        this.setProgramUniformShaderVariablesValues(this.program,uniformShaderVariablesValues);
+
+        this.pointModel.draw();
+        this.triangleModel.draw();
+        this.pointListModel.draw();
+        this.triangleListModel.draw();
+
+        this.setProgramUniformShaderVariablesValues(this.program,uniformShaderVariablesValues2);
+
+       // this.polygonModel.draw();
+       // this.circleModel.draw();
+        this.bezierModel[0].draw();
+        this.bezierModel[1].draw();
+        this.bezierModel[2].draw();
+        this.bsplineModel[0].draw();
+        this.bsplineModel[1].draw();
+        this.bsplineModel[2].draw();
+
+
+      } 
+
+      initControls(){
+
+      }
+
+      init() {
+        
+        var p = new Vec2d(5.0,0.0);
+        var p0 = new Vec2d(0.5,-1.0);
+        var p1 = new Vec2d(-0.5,-1.0);
+        var p2 = new Vec2d(0.0,1.0);
+
+        if (GeomUtils.insideTriangle(p,p0,p1,p2)==true){
+          alert("In");
+        }
+        else{
+          alert("Out")
+        }
+
+        this.gl.clearColor(0.7, 0.7, 0.9, 1.0);
+        //this.gl.enable(this.gl.DEPTH_TEST);
+        super.init();
+
+      }
+   
+  }
+
+
+  
+  </script>
+</head>
+
+<body>
+
+  <canvas id="webgl-canvas" width="800" height="800">
+    Your browser does not support the HTML5 canvas element.
+  </canvas>
+
+  <script type="text/javascript">
+      let myWebGLMainAPP = new MyWebGLMainAPP();
+      window.onload = myWebGLMainAPP.init();
+  </script>
+
+</body>
+
+</html>

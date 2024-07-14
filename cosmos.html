@@ -1,0 +1,619 @@
+<html>
+<head>
+  <title>Rendering primitives</title>
+  <!--<link rel="shortcut icon" type="image/png" href="../common/images/favicon.png" />-->
+
+  <!-- libraries -->
+  <!--<link rel="stylesheet" href="../common/lib/normalize.css">-->
+  <!--<script type="text/javascript" src="../common/lib/dat.gui.js"></script>-->
+
+  <!-- modules -->
+  <!--<script type="text/javascript" src="../common/js/utils.js"></script>-->
+
+  <!-- vertex shader -->
+
+  <link rel="stylesheet" href="./lib/normalize.css">
+  <script type="text/javascript" src="./lib/dat.gui.js"></script>
+  <script type="text/javascript" src="./js/utils.js"></script>
+  <script type="text/javascript" src="./lib/gl-matrix.js"></script>
+  <script type="text/javascript" src="./objects.js"></script>
+  <script type="text/javascript" src="./simpleGLStack.js"></script>
+  <script type="text/javascript" src="./geometry.js"></script>
+  <script type="text/javascript" src="./webGLApp.js"></script>
+  <script type="text/javascript" src="./webGLModel.js"></script>
+  <script type="text/javascript" src="./shapes.js"></script>
+  <script type="text/javascript" src="./shapesWebGL.js"></script>
+  
+
+<!--Vertex Shader-->
+   
+<script id="vertex-shader" type="x-shader/x-vertex">
+    
+  </script>
+  
+
+
+  <!-- fragment shader -->
+  <script id="fragment-shader" type="x-shader/x-fragment">
+    
+  </script>
+
+
+  <script type="text/javascript">
+  
+    class MyWebGLMainAPP extends WebGLMainApp{
+    
+        constructor(){
+            super();
+            this.program = null;
+            this.fov = 60;
+            this.rotationVector = [0.0,0.0,0.0];
+            this.lightPos = [0.0,0.0,0.0];
+            this.translationVector = [0.0,0.0,-30.0];
+            this.stack = new SimpleGLStack();
+        }
+
+        createTransformMatrices(){
+        
+            this.modelViewMatrix = mat4.create();
+            this.modelViewMatrixClean = mat4.create();
+            this.projectionMatrix = mat4.create();
+            this.normalMatrix = mat4.create();
+            this.time = 0.0;
+
+            var tv = vec3.create();
+
+            vec3.set(tv, this.translationVector[0], this.translationVector[1], this.translationVector[2]);
+
+            mat4.fromTranslation(this.modelViewMatrix,tv);
+            mat4.rotateX(this.modelViewMatrix,this.modelViewMatrix,this.rotationVector[0] * Math.PI / 180);
+            mat4.rotateY(this.modelViewMatrix,this.modelViewMatrix,this.rotationVector[1] * Math.PI / 180);
+            mat4.rotateZ(this.modelViewMatrix,this.modelViewMatrix,this.rotationVector[2] * Math.PI / 180);
+
+            mat4.fromTranslation(this.modelViewMatrixClean,tv);
+            mat4.rotateX(this.modelViewMatrixClean,this.modelViewMatrixClean,this.rotationVector[0] * Math.PI / 180);
+            mat4.rotateY(this.modelViewMatrixClean,this.modelViewMatrixClean,this.rotationVector[1] * Math.PI / 180);
+            mat4.rotateZ(this.modelViewMatrixClean,this.modelViewMatrixClean,this.rotationVector[2] * Math.PI / 180);
+            
+            mat4.identity(this.normalMatrix);
+            mat4.invert(this.normalMatrix,this.modelViewMatrix);
+            mat4.transpose(this.normalMatrix,this.normalMatrix);
+
+            //Cria a matriz de projeção com angulo de abertura de 45 graus, near plane = 0.1 e far_plane = 1000
+            mat4.identity(this.projectionMatrix);  
+            mat4.perspective(this.projectionMatrix, this.fov*(Math.PI/180), this.gl.canvas.width / this.gl.canvas.height, 0.1, 1000);
+
+        }
+
+        
+
+        async createModels(){
+
+            this.sun = new Sun(this, "sun-texture.png");
+            // await this.sun.fetch();
+            // this.sunModel = this.sun.getWebGLModel();
+
+            this.earth = new Planet(this, "mars-texture.png");
+            this.earth2 = new Planet(this);
+            this.earth3 = new Planet(this);
+            this.earth4 = new Planet(this);
+
+            /*Textures obtained from 
+            https://www.myfreetextures.com/
+            https://publicdomaintextures.com/
+            */
+
+            // this.wall = new Wall(this,16,4);
+            // this.ground = new Ground(this,64,64);
+            // this.animal = new Animal(this);
+            // this.jar = new Jar(this);
+            // this.leatherBall = new WebGLSphere(this.gl,this.program,3.0,32,32,new Color(1.0,0.0,0.0,1.0),"leather05 diffuse 1k.png");
+            // this.leatherBallModel = this.leatherBall.getWebGLModel();
+        
+            /* elephant obtido e adaptado de 
+            https://github.com/CGAL/cgal/blob/master/Data/data/meshes/elephant-with-holes.off
+            */
+            // this.elephant = new WebGLMesh(this.gl,this.programMesh,new Color(1.0,0.0,0.0,0.0),"elephant.json","elephant",null,null);
+            // await this.elephant.fetch();
+            // this.elephantModel = this.elephant.getWebGLModel();
+
+            /*Laurana50k.json obtida de 
+              https://github.com/cnr-isti-vclab/meshlabjs/blob/master/mesh/Laurana50k.ply
+            */
+            // this.statue = new WebGLMesh(this.gl,this.programMesh,new Color(1.0,0.0,0.0,0.0),"Laurana50k.json","statue",null,null);
+            // await this.statue.fetch();
+            // this.statueModel = this.statue.getWebGLModel();
+
+            /*oaktree.json obtida e adaptada de 
+            https://free3d.com/3d-model/-oak-tree-v1--463277.html
+            */
+            // this.tree = new WebGLMesh(this.gl,this.programMesh,new Color(1.0,0.0,0.0,0.0),"oaktree.json","tree",null,null);
+            // await this.tree.fetch();
+            // this.treeModel = this.tree.getWebGLModel();
+            
+
+            // const controlPoints = new PointList();
+            // controlPoints.push(new Point3d(-4.0,0.0,-4.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints.push(new Point3d(-4.0,0.0,4.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints.push(new Point3d(4.0,0.0,4.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints.push(new Point3d(4.0,0.0,-4.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints.push(new Point3d(0.0,0.0,-4.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints.push(new Point3d(0.0,10.0,-4.0,new Color(1.0,0.0,0.0),8));
+            // const bezier = new WebGLBezier(this.gl,this.programLines,new Color(0.0,0.0,1.0),controlPoints,5,32,false,false);
+            // this.bezierModel = bezier.getWebGLModel();
+
+
+            // const controlPoints2 = new PointList();
+            // controlPoints2.push(new Point3d(-8.0,0.0,-8.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints2.push(new Point3d(-8.0,0.0,8.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints2.push(new Point3d(8.0,0.0,8.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints2.push(new Point3d(8.0,0.0,-8.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints2.push(new Point3d(0.0,8.0,-8.0,new Color(1.0,0.0,0.0),8));
+            // controlPoints2.push(new Point3d(0.0,16.0,16.0,new Color(1.0,0.0,0.0),8));
+            // const knots = [0,0,0,0,1,4,5,5,5,5];
+
+            // this.bspline = new WebGLBSpline(this.gl,this.programLines,new Color(1.0,1.0,0.0),controlPoints2,knots,3,32);
+            // this.bsplineModel = this.bspline.getWebGLModel();
+
+            // this.cyl = new WebGLCylinder(this.gl,this.programNoise,1.0,1.0,128,128,new Color(1.0,0.0,0.0,1.0),"white-fur-texture.jpg");
+            // this.cylModel = this.cyl.getWebGLModel();
+
+            // this.triangle = new WebGLTriangle(this.gl,this.program,
+            //                                 new Point3d(4.0,0.0,0.0,new Color(1.0,0.0,0.0),8),
+            //                                 new Point3d(0.0,4.0,0.0,new Color(1.0,0.0,0.0),8),
+            //                                 new Point3d(-4.0,0.0,0.0,new Color(1.0,0.0,0.0),8),
+            //                                 new Color(1.0,0.0,0.0)
+            //                               );
+
+            // this.triangleModel = this.triangle.getWebGLModel();
+       
+
+        }
+
+        async create(){
+        
+            // Carrega um program       
+            //this.program = this.createProgram("vertex-shader","fragment-shader");
+            this.program = await this.loadProgram("vertexShader.sh","fragmentShader.sh");
+            this.programSpecific = await this.loadProgram("vertexShader.sh", "fragmentSunShader.sh"); // Load the new shader program
+            this.programMesh = await this.loadProgram("vertexShaderMesh.sh","fragmentShader.sh");
+            this.programLines = await this.loadProgram("vertexShaderLines.sh","fragmentShaderLines.sh");
+            this.programNoise = await this.loadProgram("vertexShaderNoise.sh","fragmentShader.sh");
+            
+            this.gl.useProgram(this.program);
+
+            //Define as variáveis attribute e uniform dos shaders
+            this.attribShaderVariables = {"aVertexPosition":"aVertexPosition",
+                                          "aVertexColor":"aVertexColor",
+                                          "aVertexNormal":"aVertexNormal",
+                                          "aVertexTextureCoord":"aTextureCoordinate"};
+
+            this.uniformShaderVariables = ["uVertexPointSize","uModelViewMatrix", "uModelViewMatrixClean","uNormalMatrix","uProjectionMatrix",
+                                           "uLightPos","uEyePos","uTextureActive","uSampler", "uTime",
+                                            "uRadius", "uSpeed"];
+            
+            //Define as variáveis attribute e uniform dos shaders para linhas
+            this.attribShaderLinesVariables = {"aVertexPosition":"aVertexPosition",
+                                              "aVertexColor":"aVertexColor",
+                                              "aVertexTextureCoord":"aTextureCoordinate"};
+
+            this.uniformShaderLinesVariables = ["uVertexPointSize","uModelViewMatrix", "uModelViewMatrixClean","uProjectionMatrix","uTextureActive","uSampler"];
+            
+
+            //Define as variáveis attribute e uniform dos shaders de malhas
+            this.attribShaderMeshVariables = {"aVertexPosition":"aVertexPosition",
+                                              "aVertexNormal":"aVertexNormal",
+                                              "aVertexTextureCoord":"aTextureCoordinate"};
+
+            this.uniformShaderMeshVariables = ["uVertexPointSize","uModelViewMatrix", "uModelViewMatrixClean","uNormalMatrix","uProjectionMatrix",
+                                               "uLightPos","uEyePos",
+                                               "uMatAmbient",
+                                               "uKa",
+                                               "uMatDiffuse",
+                                               "uKd",
+                                               "uMatSpecular",
+                                               "uKs",
+                                               "uNs",
+                                               "uD",
+                                               "uTextureActive","uSampler"];
+            
+
+
+            //Obtem a localização das variáveis no shader
+            this.setProgramAttribShaderVariablesLocation(this.program,this.attribShaderVariables);
+            this.setProgramUniformShaderVariablesLocation(this.program,this.uniformShaderVariables);
+
+            this.setProgramAttribShaderVariablesLocation(this.programNoise,this.attribShaderVariables);
+            this.setProgramUniformShaderVariablesLocation(this.programNoise,this.uniformShaderVariables);
+
+            this.setProgramAttribShaderVariablesLocation(this.programLines,this.attribShaderLinesVariables);
+            this.setProgramUniformShaderVariablesLocation(this.programLines,this.uniformShaderLinesVariables);
+            
+            this.setProgramAttribShaderVariablesLocation(this.programMesh,this.attribShaderMeshVariables);
+            this.setProgramUniformShaderVariablesLocation(this.programMesh,this.uniformShaderMeshVariables);
+            
+
+            this.createTransformMatrices();
+            
+            await this.createModels();
+
+            var uniformShaderVariablesValues = {"uVertexPointSize":["1f",16.0],
+                                                "uModelViewMatrix":["mat4",false,this.modelViewMatrix],
+                                                "uModelViewMatrixClean":["mat4", false, this.modelViewMatrixClean],
+                                                "uNormalMatrix":["mat4",false,this.normalMatrix],
+                                                "uProjectionMatrix":["mat4",false,this.projectionMatrix],
+                                                "uLightPos":["3f",this.lightPos[0],this.lightPos[1],this.lightPos[2]],
+                                                "uEyePos":["3f",-this.translationVector[0],-this.translationVector[1],-this.translationVector[2]],
+                                                "uTextureActive":["1i",1],
+                                                "uSampler":["1i",0],
+                                                "uTime": ["1f", this.time],
+                                                "uRadius": ["1f", 10.0], // Example radius
+                                                "uSpeed": ["1f", 1.0]    // Example speed
+                                                };
+
+            
+            var uniformShaderLinesVariablesValues = {"uVertexPointSize":["1f",16.0],
+                                                "uModelViewMatrix":["mat4",false,this.modelViewMatrix],
+                                                "uModelViewMatrixClean":["mat4", false, this.modelViewMatrixClean],
+                                                "uProjectionMatrix":["mat4",false,this.projectionMatrix],
+                                                "uTextureActive":["1i",0],
+                                                "uSampler":["1i",0]};
+
+            var uniformShaderMeshVariablesValues = {"uVertexPointSize":["1f",16.0],
+                                                "uModelViewMatrix":["mat4",false,this.modelViewMatrix],
+                                                "uModelViewMatrixClean":["mat4", false, this.modelViewMatrixClean],
+                                                "uNormalMatrix":["mat4",false,this.normalMatrix],
+                                                "uProjectionMatrix":["mat4",false,this.projectionMatrix],
+                                                "uLightPos":["3f",this.lightPos[0],this.lightPos[1],this.lightPos[2]],
+                                                "uEyePos":["3f",-this.translationVector[0],-this.translationVector[1],-this.translationVector[2]],
+                                                "uMatAmbient":["4fv",[1.0,1.0,1.0,1.0]],
+                                                "uKa":["3fv",[0.5,0.5,0.5]],
+                                                "uMatDiffuse":["4fv",[1.0,1.0,1.0,1.0]],
+                                                "uKd":["3fv",[0.5,0.5,0.5]],
+                                                "uMatSpecular":["4fv",[1.0,1.0,1.0,1.0]],
+                                                "uKs":["3fv",[0.5,0.5,0.5]],
+                                                "uNs":["1f",0.5],
+                                                "uD":["1f",1.0],
+                                                "uTextureActive":["1i",1],
+                                                "uSampler":["1i",0]};  
+
+            
+
+            this.setProgramUniformShaderVariablesValues(this.program,uniformShaderVariablesValues);
+            this.setProgramUniformShaderVariablesValues(this.programSpecific, uniformShaderVariablesValues); // Set uniform values for the new program
+            this.setProgramUniformShaderVariablesValues(this.programNoise,uniformShaderVariablesValues);
+            this.setProgramUniformShaderVariablesValues(this.programLines,uniformShaderLinesVariablesValues);
+            this.setProgramUniformShaderVariablesValues(this.programMesh,uniformShaderMeshVariablesValues);
+
+ 
+        }
+
+
+        drawScene(modelViewMatrix){
+
+            this.gl.useProgram(this.programSpecific);
+            var tv = vec3.create();
+            this.stack.push(mat4.clone(modelViewMatrix));
+                mat4.translate(modelViewMatrix, modelViewMatrix, tv);
+                this.updateModelViewMatrix(this.sun.program, modelViewMatrix, "uModelViewMatrix");
+                this.updateUniformValue(this.program, "uRadius", ["1f", 0.0]);
+                this.updateUniformValue(this.program, "uSpeed", ["1f", -0.2]);
+                this.sun.draw(modelViewMatrix);
+            modelViewMatrix = this.stack.pop();
+
+            this.gl.useProgram(this.program);
+            var tv = vec3.create();
+            this.stack.push(mat4.clone(modelViewMatrix));
+                mat4.translate(modelViewMatrix, modelViewMatrix, this.earth.pos);
+                this.updateModelViewMatrix(this.earth.program, modelViewMatrix, "uModelViewMatrix");
+                this.updateUniformValue(this.program, "uRadius", ["1f", 10.0]);
+                this.updateUniformValue(this.program, "uSpeed", ["1f", 1.75]);
+                this.earth.draw(modelViewMatrix);
+            modelViewMatrix = this.stack.pop();
+
+            var tv = vec3.create();
+            this.stack.push(mat4.clone(modelViewMatrix));
+                mat4.translate(modelViewMatrix, modelViewMatrix, this.earth2.pos);
+                this.updateModelViewMatrix(this.earth2.program, modelViewMatrix, "uModelViewMatrix");
+                this.updateUniformValue(this.program, "uRadius", ["1f", 15.0]);
+                this.updateUniformValue(this.program, "uSpeed", ["1f", -5.0]);
+                this.earth.draw(modelViewMatrix);
+            modelViewMatrix = this.stack.pop();
+
+            var tv = vec3.create();
+            this.stack.push(mat4.clone(modelViewMatrix));
+                mat4.translate(modelViewMatrix, modelViewMatrix, this.earth3.pos);
+                this.updateModelViewMatrix(this.earth3.program, modelViewMatrix, "uModelViewMatrix");
+                this.updateUniformValue(this.program, "uRadius", ["1f", 6.0]);
+                this.updateUniformValue(this.program, "uSpeed", ["1f", 0.55]);
+                this.earth.draw(modelViewMatrix);
+            modelViewMatrix = this.stack.pop();
+
+            var tv = vec3.create();
+            this.stack.push(mat4.clone(modelViewMatrix));
+                mat4.translate(modelViewMatrix, modelViewMatrix, this.earth4.pos);
+                this.updateModelViewMatrix(this.earth4.program, modelViewMatrix, "uModelViewMatrix");
+                this.updateUniformValue(this.program, "uRadius", ["1f", 30.0]);
+                this.updateUniformValue(this.program, "uSpeed", ["1f", 2.0]);
+                this.earth.draw(modelViewMatrix);
+            modelViewMatrix = this.stack.pop();
+          
+            // var tv = vec3.create();
+            // this.stack.push(mat4.clone(modelViewMatrix));
+            //     vec3.set(tv,  -7.0, 0.0, -5.0); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+            //     this.updateModelViewMatrix(this.wall.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.wall.draw(modelViewMatrix);
+            // modelViewMatrix = this.stack.pop();
+
+            // var tv = vec3.create();
+            // this.stack.push(mat4.clone(modelViewMatrix));
+            //     vec3.set(tv,  -7.0, 0.0, -5.0); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+            //     mat4.rotateY(modelViewMatrix,modelViewMatrix, -90.0 * Math.PI / 180);
+            //     this.updateModelViewMatrix(this.elephant.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.updateModelViewMatrix(this.wall.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.wall.draw(modelViewMatrix);
+            // modelViewMatrix = this.stack.pop();
+
+            // var tv = vec3.create();
+            // this.stack.push(mat4.clone(modelViewMatrix));
+            //     vec3.set(tv,  23.0, 0.0, -5.0); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+            //     mat4.rotateY(modelViewMatrix,modelViewMatrix, -90.0 * Math.PI / 180);
+            //     this.updateModelViewMatrix(this.elephant.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.updateModelViewMatrix(this.wall.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.wall.draw(modelViewMatrix);
+            // modelViewMatrix = this.stack.pop();
+
+            // this.stack.push(mat4.clone(modelViewMatrix));
+            //     vec3.set(tv,  -30.0, -2.0, -30.0); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+            //     this.updateModelViewMatrix(this.ground.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.ground.draw(modelViewMatrix);
+            // modelViewMatrix = this.stack.pop();            
+
+            // this.stack.push(mat4.clone(modelViewMatrix));
+            //     vec3.set(tv,  6.0, 0.0, 0.0); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+            //     this.updateModelViewMatrix(this.jar.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.jar.draw(modelViewMatrix);
+            // modelViewMatrix = this.stack.pop();
+
+            
+            // this.animal.draw(modelViewMatrix);
+
+
+            // this.stack.push(mat4.clone(modelViewMatrix));
+            //     vec3.set(tv,  12.0, 0.0, 6.0); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+            //     this.updateModelViewMatrix(this.leatherBall.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.leatherBallModel.draw();
+            // modelViewMatrix = this.stack.pop();
+            
+          
+            
+            
+            // //this.gl.disable(this.gl.DEPTH_TEST);
+            // this.stack.push(mat4.clone(modelViewMatrix));
+            //     var tv = vec3.create();
+            //     var s = vec3.create();
+            //     vec3.set(tv, 4.0, 1.5, 6); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+            //     vec3.set(s, 10, 10, 10); 
+            //     mat4.scale(modelViewMatrix,modelViewMatrix,s);
+            //     mat4.rotateX(modelViewMatrix,modelViewMatrix, -30.0 * Math.PI / 180);
+            //     mat4.rotateY(modelViewMatrix,modelViewMatrix, -10.0 * Math.PI / 180);
+            //     mat4.rotateZ(modelViewMatrix,modelViewMatrix, -12.0 * Math.PI / 180);
+            //     this.updateModelViewMatrix(this.elephant.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.elephantModel.draw();
+            // modelViewMatrix = this.stack.pop();
+
+
+            // this.stack.push(mat4.clone(modelViewMatrix));
+            //     //var tv = vec3.create();
+            //     var s = vec3.create();
+            //     vec3.set(tv, 6, 8.5, -6.5); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+
+            //     vec3.set(s, 0.01, 0.01, 0.01); 
+            //     mat4.scale(modelViewMatrix,modelViewMatrix,s);
+            //     vec3.set(tv, -this.statue.object.center[0], -this.statue.object.center[1]+8,-this.statue.object.center[2]+8); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+            //     //mat4.rotateX(modelViewMatrix,modelViewMatrix, -30.0 * Math.PI / 180);
+            //     //mat4.rotateY(modelViewMatrix,modelViewMatrix, -10.0 * Math.PI / 180);
+            //     //mat4.rotateZ(modelViewMatrix,modelViewMatrix, -12.0 * Math.PI / 180);
+            //     this.updateModelViewMatrix(this.statue.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.statueModel.draw();
+            // modelViewMatrix = this.stack.pop();
+
+
+
+            // this.stack.push(mat4.clone(modelViewMatrix));
+            //     var tv = vec3.create();
+            //     var s = vec3.create();
+            //     vec3.set(tv, 40, -3.0, 20); 
+            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+
+            //     vec3.set(s, 0.05, 0.05, 0.05); 
+            //     mat4.scale(modelViewMatrix,modelViewMatrix,s);
+            //     //vec3.set(tv, -this.statue.object.center[0], -this.statue.object.center[1],-this.statue.object.center[2]); 
+            //     //mat4.translate(modelViewMatrix,modelViewMatrix,tv);
+            //     mat4.rotateX(modelViewMatrix,modelViewMatrix, -90.0 * Math.PI / 180);
+            //     //mat4.rotateY(modelViewMatrix,modelViewMatrix, -10.0 * Math.PI / 180);
+            //     //mat4.rotateZ(modelViewMatrix,modelViewMatrix, -12.0 * Math.PI / 180);
+            //     this.updateModelViewMatrix(this.tree.program,modelViewMatrix,"uModelViewMatrix");
+            //     this.treeModel.draw();
+            // modelViewMatrix = this.stack.pop();
+              // this.gl.enable(this.gl.DEPTH_TEST);
+            
+
+              // this.bezierModel[1].draw();
+              // this.bezierModel[2].draw();
+              
+
+            //  this.bsplineModel[1].draw();
+            //  this.bsplineModel[2].draw();
+              
+            //this.triangleModel.draw();
+        }
+
+
+        draw() {
+            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+           
+            var tv = vec3.create();
+            vec3.set(tv, this.translationVector[0], this.translationVector[1], this.translationVector[2]);
+        
+            
+            // this.rotationVector[1]+=1;
+            mat4.fromTranslation(this.modelViewMatrix,tv);
+            mat4.rotateX(this.modelViewMatrix,this.modelViewMatrix,this.rotationVector[0] * Math.PI / 180);
+            mat4.rotateY(this.modelViewMatrix,this.modelViewMatrix,this.rotationVector[1] * Math.PI / 180);
+            mat4.rotateZ(this.modelViewMatrix,this.modelViewMatrix,this.rotationVector[2] * Math.PI / 180);
+
+            this.updateModelViewMatrix(this.program,this.modelViewMatrix,"uModelViewMatrix");   
+            this.updateModelViewMatrix(this.programLines,this.modelViewMatrix,"uModelViewMatrix");   
+            this.updateModelViewMatrix(this.programNoise,this.modelViewMatrix,"uModelViewMatrix");  
+            this.updateModelViewMatrix(this.programMesh,this.modelViewMatrix,"uModelViewMatrix");
+            
+            mat4.fromTranslation(this.modelViewMatrixClean,tv);
+            mat4.rotateX(this.modelViewMatrixClean,this.modelViewMatrixClean,this.rotationVector[0] * Math.PI / 180);
+            mat4.rotateY(this.modelViewMatrixClean,this.modelViewMatrixClean,this.rotationVector[1] * Math.PI / 180);
+            mat4.rotateZ(this.modelViewMatrixClean,this.modelViewMatrixClean,this.rotationVector[2] * Math.PI / 180);
+
+            this.updateModelViewMatrix(this.program,this.modelViewMatrix,"uModelViewMatrixClean");   
+            this.updateModelViewMatrix(this.programLines,this.modelViewMatrix,"uModelViewMatrixClean");   
+            this.updateModelViewMatrix(this.programNoise,this.modelViewMatrix,"uModelViewMatrixClean");  
+            this.updateModelViewMatrix(this.programMesh,this.modelViewMatrix,"uModelViewMatrixClean");
+
+
+
+            mat4.identity(this.normalMatrix);
+            mat4.invert(this.normalMatrix,this.modelViewMatrix);
+            mat4.transpose(this.normalMatrix,this.normalMatrix);
+
+            this.updateNormalMatrix(this.program,this.normalMatrix,"uNormalMatrix");            
+            this.updateNormalMatrix(this.programLines,this.normalMatrix,"uNormalMatrix");    
+            this.updateNormalMatrix(this.programNoise,this.normalMatrix,"uNormalMatrix");           
+            this.updateNormalMatrix(this.programMesh,this.normalMatrix,"uNormalMatrix");           
+
+
+            mat4.identity(this.projectionMatrix);  
+            mat4.perspective(this.projectionMatrix, this.fov*(Math.PI/180), this.gl.canvas.width / this.gl.canvas.height, 0.1, 1000);
+
+            this.updateProjectionMatrix(this.program,this.projectionMatrix,"uProjectionMatrix");
+            this.updateProjectionMatrix(this.programLines,this.projectionMatrix,"uProjectionMatrix");
+            this.updateProjectionMatrix(this.programNoise,this.projectionMatrix,"uProjectionMatrix");
+            this.updateProjectionMatrix(this.programMesh,this.projectionMatrix,"uProjectionMatrix");
+    
+            this.time += 0.01;
+            this.updateUniformTime(this.program, this.time, "uTime");
+
+            this.drawScene(this.modelViewMatrix);
+
+            // requestAnimationFrame(this.draw.bind(this));
+        } 
+
+        initControls(){
+        
+            var obj = this;
+
+            //var axis = ["x","y","z"];
+
+            // A wrapper around dat.GUI interface for a simpler API
+            // for the purpose of this book
+            utils.configureControls({
+                
+                /*
+                'Rendering Mode': {
+                value: renderingMode,
+                options: [
+                    'TRIANGLES',
+                    'LINES',
+                    'POINTS',
+                    'LINE_LOOP',
+                    'LINE_STRIP',
+                    'TRIANGLE_STRIP',
+                    'TRIANGLE_FAN'
+                ],
+                onChange: v => {renderingMode = v;render();}
+                },*/
+
+                
+                // reduce receives a function and the initial value (below the initial value is {})
+                // result is the initial value or the return of the previous call to the function
+                // Spread all values from the reduce onto the controls
+                ...['Translate X', 'Translate Y', 'Translate Z'].reduce((result, name, i) => {
+                result[name] = {
+                    value: obj.translationVector[i],
+                    min: -100, 
+                    max: 100, 
+                    step: 0.000001,
+                    onChange(v, state){
+                    obj.translationVector[i] = v;
+                    obj.draw(); 
+                    }
+                };
+                return result;
+                }, {}),
+
+
+                ...['Rotate X', 'Rotate Y', 'Rotate Z'].reduce((result, name, i) => {
+                result[name] = {
+                    value: obj.rotationVector[i],
+                    min: -180, max: 180, step: 0.000001,
+                    onChange(v, state) {
+                    obj.rotationVector = [
+                        state['Rotate X'],
+                        state['Rotate Y'],
+                        state['Rotate Z']
+                    ];
+                    obj.draw();  
+
+                    }
+                };
+                return result;
+                }, {}),
+
+                
+                'fov':{
+                value: obj.fov,
+                min : 0.0,
+                max : 120,
+                step: 0.001,
+                onChange(v,state){
+                    obj.fov = v;
+                    obj.draw();
+                }
+            }
+        })
+    }
+
+
+
+        init() {
+            // this.gl.clearColor(0.6, 0.7, 1.0, 1.0);
+            this.gl.enable(this.gl.DEPTH_TEST);
+            super.init();
+        }
+   
+  }
+
+  </script>
+</head>
+
+<body>
+
+  <canvas id="webgl-canvas" width="800" height="800" style="background-color: black;">
+    Your browser does not support the HTML5 canvas element.
+  </canvas>
+
+  <script type="text/javascript">
+      let myWebGLMainAPP = new MyWebGLMainAPP();
+      window.onload = myWebGLMainAPP.init();
+  </script>
+
+</body>
+
+</html>
