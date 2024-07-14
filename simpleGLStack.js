@@ -1,24 +1,36 @@
-class SimpleGLStack{
+class SimpleGLStack {
 
-    constructor (){
+    constructor() {
         this.elems = [];
     }
 
-    size(){
+    size() {
         return this.elems.length;
     }
 
-    push(elem){
-        this.elems.push(elem);
+    push(elem) {
+        if (elem) {
+            this.elems.push(elem);
+        } else {
+            console.warn("Attempting to push an invalid element onto the stack");
+        }
     }
 
-    pop(){
-        return this.elems.pop();
+    pop() {
+        if (this.elems.length > 0) {
+            return this.elems.pop();
+        } else {
+            console.warn("Attempting to pop from an empty stack");
+            return null;
+        }
     }
 
-    top(){
-        return this.elems[this.elems.length-1];
+    top() {
+        if (this.elems.length > 0) {
+            return this.elems[this.elems.length - 1];
+        } else {
+            console.warn("Attempting to access the top element of an empty stack");
+            return null;
+        }
     }
-
-    
 }

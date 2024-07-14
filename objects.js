@@ -38,7 +38,62 @@ class Sun extends Celestial {
 class Planet extends Celestial{
     constructor(app, texture = null, scale = 1.0, tRadius = 1.0, tSpeed = 1.0){
         super(app, texture, scale, tRadius, tSpeed);
+        this.heightMap = generateHeightMap(257, 1.0); // Tamanho 257 para uma grid 256x256
+        this.initBuffers();
     }
+
+    initBuffers() {
+        // Inicializa os buffers dos vértices aqui
+        let vertices = [];
+        let indices = [];
+
+        for (let i = 0; i < this.heightMap.length; i++) {
+            for (let j = 0; j < this.heightMap[i].length; j++) {
+                let x = i / (this.heightMap.length - 1) * 2 - 1;
+                let y = j / (this.heightMap[i].length - 1) * 2 - 1;
+                let z = this.heightMap[i][j];
+                vertices.push(x * this.radius, y * this.radius, z * this.radius);
+            }
+        }
+
+        // Criar índices para desenhar os triângulos
+        for (let i = 0; i < this.heightMap.length - 1; i++) {
+            for (let j = 0; j < this.heightMap[i].length - 1; j++) {
+                let topLeft = i * this.heightMap.length + j;
+                let topRight = topLeft + 1;
+                let bottomLeft = topLeft + this.heightMap.length;
+                let bottomRight = bottomLeft + 1;
+                indices.push(topLeft, bottomLeft, topRight);
+                indices.push(topRight, bottomLeft, bottomRight);
+            }
+        }
+
+        this.vertexBuffer = this.app.gl.createBuffer();
+        this.app.gl.bindBuffer(this.app.gl.ARRAY_BUFFER, this.vertexBuffer);
+        this.app.gl.bufferData(this.app.gl.ARRAY_BUFFER, new Float32Array(vertices), this.app.gl.STATIC_DRAW);
+
+        this.indexBuffer = this.app.gl.createBuffer();
+        this.app.gl.bindBuffer(this.app.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+        this.app.gl.bufferData(this.app.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this.app.gl.STATIC_DRAW);
+
+        this.numElements = indices.length;
+    }
+
+    draw(modelViewMatrix) {
+        // Desenha o planeta utilizando o shader e os buffers de vértices e índices
+        this.stack.push(mat4.clone(modelViewMatrix));
+        mat4.translate(modelViewMatrix, modelViewMatrix, this.pos);
+        mat4.scale(modelViewMatrix, modelViewMatrix, this.scale);
+        this.updateModelViewMatrix(this.sphereModel.program, modelViewMatrix, "uModelViewMatrix");
+        this.app.gl.bindBuffer(this.app.gl.ARRAY_BUFFER, this.vertexBuffer);
+        this.app.gl.vertexAttribPointer(this.app.program.attribShaderVariables.aVertexPosition, 3, this.app.gl.FLOAT, false, 0, 0);
+        this.app.gl.enableVertexAttribArray(this.app.program.attribShaderVariables.aVertexPosition);
+
+        this.app.gl.bindBuffer(this.app.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+        this.app.gl.drawElements(this.app.gl.TRIANGLES, this.numElements, this.app.gl.UNSIGNED_SHORT, 0);
+        modelViewMatrix = this.stack.pop();
+    }
+
 }
 
 class Animal{
@@ -322,7 +377,6 @@ class Wall{
         }
     }
 }
-
 
 
 class Ground{

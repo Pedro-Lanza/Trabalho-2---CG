@@ -23,8 +23,7 @@
   <script type="text/javascript" src="./webGLModel.js"></script>
   <script type="text/javascript" src="./shapes.js"></script>
   <script type="text/javascript" src="./shapesWebGL.js"></script>
-  
-
+  <script type="text/javascript" src="./squareDiamond.js"></script>
 <!--Vertex Shader-->
    
 <script id="vertex-shader" type="x-shader/x-vertex">
@@ -105,6 +104,14 @@
             // Carrega um program       
             //this.program = this.createProgram("vertex-shader","fragment-shader");
             this.program = await this.loadProgram("vertexShader.sh","fragmentShader.sh");
+            if (!this.program) {
+                console.error("Failed to create shader program");
+                return;
+            }
+            console.log("Shader program created successfully");
+
+
+            this.program = await this.loadProgram("vertexShader.sh","fragmentShader.sh");
             this.programSpecific = await this.loadProgram("sunVertexShader.sh", "fragmentShader.sh"); // Load the new shader program
             this.programMesh = await this.loadProgram("vertexShaderMesh.sh","fragmentShader.sh");
             this.programLines = await this.loadProgram("vertexShaderLines.sh","fragmentShaderLines.sh");
@@ -166,6 +173,8 @@
             this.createTransformMatrices();
             
             await this.createModels();
+            await this.createModels();
+
 
             var uniformShaderVariablesValues = {"uVertexPointSize":["1f",16.0],
                                                 "uModelViewMatrix":["mat4",false,this.modelViewMatrix],
@@ -245,6 +254,26 @@
         draw() {
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
            
+            this.gl.useProgram(this.program);
+            if (!this.program.attribShaderVariables) {
+                console.error("AttribShaderVariables not set for the program");
+                return;
+            }
+            if (!this.program.uniformShaderVariables) {
+                console.error("UniformShaderVariables not set for the program");
+                return;
+            }
+            console.log("AAAAAAAAAAAAAAAAAA");
+            console.log("Using program with attribShaderVariables: ", this.program.attribShaderVariables);
+            console.log("Using program with attribShaderVariables: ", this.program.attribShaderVariables);
+            console.log("Using program with attribShaderVariables: ", this.program.attribShaderVariables);
+            console.log("Using program with attribShaderVariables: ", this.program.attribShaderVariables);
+            console.log("Using program with attribShaderVariables: ", this.program.attribShaderVariables);
+            console.log("Using program with attribShaderVariables: ", this.program.attribShaderVariables);
+            console.log("Using program with attribShaderVariables: ", this.program.attribShaderVariables);
+            console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBB");
+
+
             var tv = vec3.create();
             vec3.set(tv, this.translationVector[0], this.translationVector[1], this.translationVector[2]);
         
