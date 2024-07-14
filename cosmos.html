@@ -50,6 +50,7 @@
             this.rotationVector = [0.0,0.0,0.0];
             this.lightPos = [0.0,0.0,0.0];
             this.translationVector = [0.0,0.0,-30.0];
+            this.planets = [];
             this.stack = new SimpleGLStack();
         }
 
@@ -90,83 +91,12 @@
         async createModels(){
 
             this.sun = new Sun(this, "sun-texture.png");
-            // await this.sun.fetch();
-            // this.sunModel = this.sun.getWebGLModel();
 
-            this.earth = new Planet(this, "mars-texture.png");
-            this.earth2 = new Planet(this);
-            this.earth3 = new Planet(this);
-            this.earth4 = new Planet(this);
-
-            /*Textures obtained from 
-            https://www.myfreetextures.com/
-            https://publicdomaintextures.com/
-            */
-
-            // this.wall = new Wall(this,16,4);
-            // this.ground = new Ground(this,64,64);
-            // this.animal = new Animal(this);
-            // this.jar = new Jar(this);
-            // this.leatherBall = new WebGLSphere(this.gl,this.program,3.0,32,32,new Color(1.0,0.0,0.0,1.0),"leather05 diffuse 1k.png");
-            // this.leatherBallModel = this.leatherBall.getWebGLModel();
-        
-            /* elephant obtido e adaptado de 
-            https://github.com/CGAL/cgal/blob/master/Data/data/meshes/elephant-with-holes.off
-            */
-            // this.elephant = new WebGLMesh(this.gl,this.programMesh,new Color(1.0,0.0,0.0,0.0),"elephant.json","elephant",null,null);
-            // await this.elephant.fetch();
-            // this.elephantModel = this.elephant.getWebGLModel();
-
-            /*Laurana50k.json obtida de 
-              https://github.com/cnr-isti-vclab/meshlabjs/blob/master/mesh/Laurana50k.ply
-            */
-            // this.statue = new WebGLMesh(this.gl,this.programMesh,new Color(1.0,0.0,0.0,0.0),"Laurana50k.json","statue",null,null);
-            // await this.statue.fetch();
-            // this.statueModel = this.statue.getWebGLModel();
-
-            /*oaktree.json obtida e adaptada de 
-            https://free3d.com/3d-model/-oak-tree-v1--463277.html
-            */
-            // this.tree = new WebGLMesh(this.gl,this.programMesh,new Color(1.0,0.0,0.0,0.0),"oaktree.json","tree",null,null);
-            // await this.tree.fetch();
-            // this.treeModel = this.tree.getWebGLModel();
-            
-
-            // const controlPoints = new PointList();
-            // controlPoints.push(new Point3d(-4.0,0.0,-4.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints.push(new Point3d(-4.0,0.0,4.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints.push(new Point3d(4.0,0.0,4.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints.push(new Point3d(4.0,0.0,-4.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints.push(new Point3d(0.0,0.0,-4.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints.push(new Point3d(0.0,10.0,-4.0,new Color(1.0,0.0,0.0),8));
-            // const bezier = new WebGLBezier(this.gl,this.programLines,new Color(0.0,0.0,1.0),controlPoints,5,32,false,false);
-            // this.bezierModel = bezier.getWebGLModel();
-
-
-            // const controlPoints2 = new PointList();
-            // controlPoints2.push(new Point3d(-8.0,0.0,-8.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints2.push(new Point3d(-8.0,0.0,8.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints2.push(new Point3d(8.0,0.0,8.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints2.push(new Point3d(8.0,0.0,-8.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints2.push(new Point3d(0.0,8.0,-8.0,new Color(1.0,0.0,0.0),8));
-            // controlPoints2.push(new Point3d(0.0,16.0,16.0,new Color(1.0,0.0,0.0),8));
-            // const knots = [0,0,0,0,1,4,5,5,5,5];
-
-            // this.bspline = new WebGLBSpline(this.gl,this.programLines,new Color(1.0,1.0,0.0),controlPoints2,knots,3,32);
-            // this.bsplineModel = this.bspline.getWebGLModel();
-
-            // this.cyl = new WebGLCylinder(this.gl,this.programNoise,1.0,1.0,128,128,new Color(1.0,0.0,0.0,1.0),"white-fur-texture.jpg");
-            // this.cylModel = this.cyl.getWebGLModel();
-
-            // this.triangle = new WebGLTriangle(this.gl,this.program,
-            //                                 new Point3d(4.0,0.0,0.0,new Color(1.0,0.0,0.0),8),
-            //                                 new Point3d(0.0,4.0,0.0,new Color(1.0,0.0,0.0),8),
-            //                                 new Point3d(-4.0,0.0,0.0,new Color(1.0,0.0,0.0),8),
-            //                                 new Color(1.0,0.0,0.0)
-            //                               );
-
-            // this.triangleModel = this.triangle.getWebGLModel();
-       
+            this.earth = new Planet(this, "mars-texture.png", 1.0, 10.0, 1.75);
+            this.earth2 = new Planet(this, "mars-texture.png", 1.0, 15.0, -5.0);
+            this.earth3 = new Planet(this, "mars-texture.png", 1.0, 6.0, 0.55);
+            this.earth4 = new Planet(this, "mars-texture.png", 1.0, 30.0, 2.0);
+            this.planets.push(this.earth, this.earth2, this.earth3, this.earth4);
 
         }
 
@@ -175,7 +105,7 @@
             // Carrega um program       
             //this.program = this.createProgram("vertex-shader","fragment-shader");
             this.program = await this.loadProgram("vertexShader.sh","fragmentShader.sh");
-            this.programSpecific = await this.loadProgram("vertexShader.sh", "fragmentSunShader.sh"); // Load the new shader program
+            this.programSpecific = await this.loadProgram("sunVertexShader.sh", "fragmentShader.sh"); // Load the new shader program
             this.programMesh = await this.loadProgram("vertexShaderMesh.sh","fragmentShader.sh");
             this.programLines = await this.loadProgram("vertexShaderLines.sh","fragmentShaderLines.sh");
             this.programNoise = await this.loadProgram("vertexShaderNoise.sh","fragmentShader.sh");
@@ -247,7 +177,7 @@
                                                 "uTextureActive":["1i",1],
                                                 "uSampler":["1i",0],
                                                 "uTime": ["1f", this.time],
-                                                "uRadius": ["1f", 10.0], // Example radius
+                                                "uRadius": ["1f", 0.0], // Example radius
                                                 "uSpeed": ["1f", 1.0]    // Example speed
                                                 };
 
@@ -292,170 +222,23 @@
         drawScene(modelViewMatrix){
 
             this.gl.useProgram(this.programSpecific);
-            var tv = vec3.create();
             this.stack.push(mat4.clone(modelViewMatrix));
-                mat4.translate(modelViewMatrix, modelViewMatrix, tv);
                 this.updateModelViewMatrix(this.sun.program, modelViewMatrix, "uModelViewMatrix");
-                this.updateUniformValue(this.program, "uRadius", ["1f", 0.0]);
-                this.updateUniformValue(this.program, "uSpeed", ["1f", -0.2]);
+                this.updateUniformValue(this.program, "uRadius", ["1f", this.sun.tRadius]);
+                 this.updateUniformValue(this.program, "uSpeed", ["1f", this.sun.tSpeed]);
                 this.sun.draw(modelViewMatrix);
             modelViewMatrix = this.stack.pop();
 
             this.gl.useProgram(this.program);
-            var tv = vec3.create();
-            this.stack.push(mat4.clone(modelViewMatrix));
-                mat4.translate(modelViewMatrix, modelViewMatrix, this.earth.pos);
-                this.updateModelViewMatrix(this.earth.program, modelViewMatrix, "uModelViewMatrix");
-                this.updateUniformValue(this.program, "uRadius", ["1f", 10.0]);
-                this.updateUniformValue(this.program, "uSpeed", ["1f", 1.75]);
-                this.earth.draw(modelViewMatrix);
-            modelViewMatrix = this.stack.pop();
-
-            var tv = vec3.create();
-            this.stack.push(mat4.clone(modelViewMatrix));
-                mat4.translate(modelViewMatrix, modelViewMatrix, this.earth2.pos);
-                this.updateModelViewMatrix(this.earth2.program, modelViewMatrix, "uModelViewMatrix");
-                this.updateUniformValue(this.program, "uRadius", ["1f", 15.0]);
-                this.updateUniformValue(this.program, "uSpeed", ["1f", -5.0]);
-                this.earth.draw(modelViewMatrix);
-            modelViewMatrix = this.stack.pop();
-
-            var tv = vec3.create();
-            this.stack.push(mat4.clone(modelViewMatrix));
-                mat4.translate(modelViewMatrix, modelViewMatrix, this.earth3.pos);
-                this.updateModelViewMatrix(this.earth3.program, modelViewMatrix, "uModelViewMatrix");
-                this.updateUniformValue(this.program, "uRadius", ["1f", 6.0]);
-                this.updateUniformValue(this.program, "uSpeed", ["1f", 0.55]);
-                this.earth.draw(modelViewMatrix);
-            modelViewMatrix = this.stack.pop();
-
-            var tv = vec3.create();
-            this.stack.push(mat4.clone(modelViewMatrix));
-                mat4.translate(modelViewMatrix, modelViewMatrix, this.earth4.pos);
-                this.updateModelViewMatrix(this.earth4.program, modelViewMatrix, "uModelViewMatrix");
-                this.updateUniformValue(this.program, "uRadius", ["1f", 30.0]);
-                this.updateUniformValue(this.program, "uSpeed", ["1f", 2.0]);
-                this.earth.draw(modelViewMatrix);
-            modelViewMatrix = this.stack.pop();
-          
-            // var tv = vec3.create();
-            // this.stack.push(mat4.clone(modelViewMatrix));
-            //     vec3.set(tv,  -7.0, 0.0, -5.0); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-            //     this.updateModelViewMatrix(this.wall.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.wall.draw(modelViewMatrix);
-            // modelViewMatrix = this.stack.pop();
-
-            // var tv = vec3.create();
-            // this.stack.push(mat4.clone(modelViewMatrix));
-            //     vec3.set(tv,  -7.0, 0.0, -5.0); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-            //     mat4.rotateY(modelViewMatrix,modelViewMatrix, -90.0 * Math.PI / 180);
-            //     this.updateModelViewMatrix(this.elephant.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.updateModelViewMatrix(this.wall.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.wall.draw(modelViewMatrix);
-            // modelViewMatrix = this.stack.pop();
-
-            // var tv = vec3.create();
-            // this.stack.push(mat4.clone(modelViewMatrix));
-            //     vec3.set(tv,  23.0, 0.0, -5.0); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-            //     mat4.rotateY(modelViewMatrix,modelViewMatrix, -90.0 * Math.PI / 180);
-            //     this.updateModelViewMatrix(this.elephant.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.updateModelViewMatrix(this.wall.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.wall.draw(modelViewMatrix);
-            // modelViewMatrix = this.stack.pop();
-
-            // this.stack.push(mat4.clone(modelViewMatrix));
-            //     vec3.set(tv,  -30.0, -2.0, -30.0); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-            //     this.updateModelViewMatrix(this.ground.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.ground.draw(modelViewMatrix);
-            // modelViewMatrix = this.stack.pop();            
-
-            // this.stack.push(mat4.clone(modelViewMatrix));
-            //     vec3.set(tv,  6.0, 0.0, 0.0); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-            //     this.updateModelViewMatrix(this.jar.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.jar.draw(modelViewMatrix);
-            // modelViewMatrix = this.stack.pop();
-
-            
-            // this.animal.draw(modelViewMatrix);
-
-
-            // this.stack.push(mat4.clone(modelViewMatrix));
-            //     vec3.set(tv,  12.0, 0.0, 6.0); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-            //     this.updateModelViewMatrix(this.leatherBall.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.leatherBallModel.draw();
-            // modelViewMatrix = this.stack.pop();
-            
-          
-            
-            
-            // //this.gl.disable(this.gl.DEPTH_TEST);
-            // this.stack.push(mat4.clone(modelViewMatrix));
-            //     var tv = vec3.create();
-            //     var s = vec3.create();
-            //     vec3.set(tv, 4.0, 1.5, 6); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-            //     vec3.set(s, 10, 10, 10); 
-            //     mat4.scale(modelViewMatrix,modelViewMatrix,s);
-            //     mat4.rotateX(modelViewMatrix,modelViewMatrix, -30.0 * Math.PI / 180);
-            //     mat4.rotateY(modelViewMatrix,modelViewMatrix, -10.0 * Math.PI / 180);
-            //     mat4.rotateZ(modelViewMatrix,modelViewMatrix, -12.0 * Math.PI / 180);
-            //     this.updateModelViewMatrix(this.elephant.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.elephantModel.draw();
-            // modelViewMatrix = this.stack.pop();
-
-
-            // this.stack.push(mat4.clone(modelViewMatrix));
-            //     //var tv = vec3.create();
-            //     var s = vec3.create();
-            //     vec3.set(tv, 6, 8.5, -6.5); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-
-            //     vec3.set(s, 0.01, 0.01, 0.01); 
-            //     mat4.scale(modelViewMatrix,modelViewMatrix,s);
-            //     vec3.set(tv, -this.statue.object.center[0], -this.statue.object.center[1]+8,-this.statue.object.center[2]+8); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-            //     //mat4.rotateX(modelViewMatrix,modelViewMatrix, -30.0 * Math.PI / 180);
-            //     //mat4.rotateY(modelViewMatrix,modelViewMatrix, -10.0 * Math.PI / 180);
-            //     //mat4.rotateZ(modelViewMatrix,modelViewMatrix, -12.0 * Math.PI / 180);
-            //     this.updateModelViewMatrix(this.statue.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.statueModel.draw();
-            // modelViewMatrix = this.stack.pop();
-
-
-
-            // this.stack.push(mat4.clone(modelViewMatrix));
-            //     var tv = vec3.create();
-            //     var s = vec3.create();
-            //     vec3.set(tv, 40, -3.0, 20); 
-            //     mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-
-            //     vec3.set(s, 0.05, 0.05, 0.05); 
-            //     mat4.scale(modelViewMatrix,modelViewMatrix,s);
-            //     //vec3.set(tv, -this.statue.object.center[0], -this.statue.object.center[1],-this.statue.object.center[2]); 
-            //     //mat4.translate(modelViewMatrix,modelViewMatrix,tv);
-            //     mat4.rotateX(modelViewMatrix,modelViewMatrix, -90.0 * Math.PI / 180);
-            //     //mat4.rotateY(modelViewMatrix,modelViewMatrix, -10.0 * Math.PI / 180);
-            //     //mat4.rotateZ(modelViewMatrix,modelViewMatrix, -12.0 * Math.PI / 180);
-            //     this.updateModelViewMatrix(this.tree.program,modelViewMatrix,"uModelViewMatrix");
-            //     this.treeModel.draw();
-            // modelViewMatrix = this.stack.pop();
-              // this.gl.enable(this.gl.DEPTH_TEST);
-            
-
-              // this.bezierModel[1].draw();
-              // this.bezierModel[2].draw();
-              
-
-            //  this.bsplineModel[1].draw();
-            //  this.bsplineModel[2].draw();
-              
-            //this.triangleModel.draw();
+            for (var i = 0; i < this.planets.length; i++){
+              this.stack.push(mat4.clone(modelViewMatrix));
+                mat4.translate(modelViewMatrix, modelViewMatrix, this.planets[i].pos);
+                this.updateModelViewMatrix(this.planets[i].program, modelViewMatrix, "uModelViewMatrix");
+                this.updateUniformValue(this.program, "uRadius", ["1f", this.planets[i].tRadius]);
+                this.updateUniformValue(this.program, "uSpeed", ["1f", this.planets[i].tSpeed]);
+                this.planets[i].draw(modelViewMatrix);
+              modelViewMatrix = this.stack.pop();
+            }
         }
 
 

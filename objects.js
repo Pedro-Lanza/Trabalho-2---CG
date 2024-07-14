@@ -1,14 +1,18 @@
 class Celestial{
-    constructor(app, texture = null){
+    constructor(app, texture = null, scale = 1.0,  tRadius = 0.0, tSpeed = 1.0, rSpeed = 1.0){
+        this.app = app;
         this.gl = app.gl;
         this.program = app.program;
         this.programNoise = app.programNoise;
         this.updateModelViewMatrix = app.updateModelViewMatrix;
+        this.tRadius = tRadius;
+        this.tSpeed = tSpeed;
+        this.rSpeed = rSpeed;
         this.stack = new SimpleGLStack();
         this.pos = vec3.create();
         this.scale = vec3.create()
 
-        vec3.set(this.scale, 1.0, 1.0, 1.0);
+        vec3.set(this.scale, scale, scale, scale);
         vec3.set(this.pos, 0.0, 0.0, 0.0);
 
         this.sphere = new WebGLSphere(this.gl, this.program, 1.0,32,32,new Color(1.0,0.0,0.0,1.0), texture);
@@ -16,40 +20,24 @@ class Celestial{
     }
 
     draw(modelViewMatrix){
-        var s = vec3.create();
-        var tv = vec3.create();
-
         this.stack.push(mat4.clone(modelViewMatrix));
-            vec3.set(this.pos, 10.0, 0.0, 0.0);
             mat4.scale(modelViewMatrix,modelViewMatrix,this.scale);
             this.updateModelViewMatrix(this.sphereModel.program,modelViewMatrix,"uModelViewMatrix");
             this.sphereModel.draw();
         modelViewMatrix = this.stack.pop();
-
     }
 }
 
 class Sun extends Celestial {
     constructor(app, texture = "sun-texture.png"){
-        super(app, texture);
-        vec3.set(this.scale, 5.0, 5.0, 5,0); 
+        super(app, texture, 5.0, 0.0, -0.75);
+        vec3.set(this.scale, 5.0, 5.0, 5,0);
     }
 }
 
 class Planet extends Celestial{
-    constructor(app, texture = null){
-        super(app, texture);
-    }
-
-    draw(modelViewMatrix){
-        var s = vec3.create();
-
-        this.stack.push(mat4.clone(modelViewMatrix));
-            vec3.set(s, 1.0, 1.0, 1.0);
-            mat4.scale(modelViewMatrix,modelViewMatrix,s);
-            this.updateModelViewMatrix(this.sphereModel.program,modelViewMatrix,"uModelViewMatrix");
-            this.sphereModel.draw();
-        modelViewMatrix = this.stack.pop();
+    constructor(app, texture = null, scale = 1.0, tRadius = 1.0, tSpeed = 1.0){
+        super(app, texture, scale, tRadius, tSpeed);
     }
 }
 
