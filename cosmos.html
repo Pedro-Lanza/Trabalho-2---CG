@@ -51,6 +51,10 @@
             this.lightPos = [0.0,0.0,0.0];
             this.translationVector = [0.0,0.0,-30.0];
             this.planets = [];
+            this.ambientCoefficient = 0.3;
+            this.diffuseCoefficient = 0.8;
+            this.specularCoefficient = 1.0;
+            this.shininess = 8.0;
             this.stack = new SimpleGLStack();
         }
 
@@ -244,56 +248,59 @@
 
         draw() {
             this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-           
-            var tv = vec3.create();
-            vec3.set(tv, this.translationVector[0], this.translationVector[1], this.translationVector[2]);
-        
-            
-            // this.rotationVector[1]+=1;
-            mat4.fromTranslation(this.modelViewMatrix,tv);
-            mat4.rotateX(this.modelViewMatrix,this.modelViewMatrix,this.rotationVector[0] * Math.PI / 180);
-            mat4.rotateY(this.modelViewMatrix,this.modelViewMatrix,this.rotationVector[1] * Math.PI / 180);
-            mat4.rotateZ(this.modelViewMatrix,this.modelViewMatrix,this.rotationVector[2] * Math.PI / 180);
+   
+    var tv = vec3.create();
+    vec3.set(tv, this.translationVector[0], this.translationVector[1], this.translationVector[2]);
 
-            this.updateModelViewMatrix(this.program,this.modelViewMatrix,"uModelViewMatrix");   
-            this.updateModelViewMatrix(this.programLines,this.modelViewMatrix,"uModelViewMatrix");   
-            this.updateModelViewMatrix(this.programNoise,this.modelViewMatrix,"uModelViewMatrix");  
-            this.updateModelViewMatrix(this.programMesh,this.modelViewMatrix,"uModelViewMatrix");
-            
-            mat4.fromTranslation(this.modelViewMatrixClean,tv);
-            mat4.rotateX(this.modelViewMatrixClean,this.modelViewMatrixClean,this.rotationVector[0] * Math.PI / 180);
-            mat4.rotateY(this.modelViewMatrixClean,this.modelViewMatrixClean,this.rotationVector[1] * Math.PI / 180);
-            mat4.rotateZ(this.modelViewMatrixClean,this.modelViewMatrixClean,this.rotationVector[2] * Math.PI / 180);
+    mat4.fromTranslation(this.modelViewMatrix, tv);
+    mat4.rotateX(this.modelViewMatrix, this.modelViewMatrix, this.rotationVector[0] * Math.PI / 180);
+    mat4.rotateY(this.modelViewMatrix, this.modelViewMatrix, this.rotationVector[1] * Math.PI / 180);
+    mat4.rotateZ(this.modelViewMatrix, this.modelViewMatrix, this.rotationVector[2] * Math.PI / 180);
 
-            this.updateModelViewMatrix(this.program,this.modelViewMatrix,"uModelViewMatrixClean");   
-            this.updateModelViewMatrix(this.programLines,this.modelViewMatrix,"uModelViewMatrixClean");   
-            this.updateModelViewMatrix(this.programNoise,this.modelViewMatrix,"uModelViewMatrixClean");  
-            this.updateModelViewMatrix(this.programMesh,this.modelViewMatrix,"uModelViewMatrixClean");
-
-
-
-            mat4.identity(this.normalMatrix);
-            mat4.invert(this.normalMatrix,this.modelViewMatrix);
-            mat4.transpose(this.normalMatrix,this.normalMatrix);
-
-            this.updateNormalMatrix(this.program,this.normalMatrix,"uNormalMatrix");            
-            this.updateNormalMatrix(this.programLines,this.normalMatrix,"uNormalMatrix");    
-            this.updateNormalMatrix(this.programNoise,this.normalMatrix,"uNormalMatrix");           
-            this.updateNormalMatrix(this.programMesh,this.normalMatrix,"uNormalMatrix");           
-
-
-            mat4.identity(this.projectionMatrix);  
-            mat4.perspective(this.projectionMatrix, this.fov*(Math.PI/180), this.gl.canvas.width / this.gl.canvas.height, 0.1, 1000);
-
-            this.updateProjectionMatrix(this.program,this.projectionMatrix,"uProjectionMatrix");
-            this.updateProjectionMatrix(this.programLines,this.projectionMatrix,"uProjectionMatrix");
-            this.updateProjectionMatrix(this.programNoise,this.projectionMatrix,"uProjectionMatrix");
-            this.updateProjectionMatrix(this.programMesh,this.projectionMatrix,"uProjectionMatrix");
+    this.updateModelViewMatrix(this.program, this.modelViewMatrix, "uModelViewMatrix");   
+    this.updateModelViewMatrix(this.programLines, this.modelViewMatrix, "uModelViewMatrix");   
+    this.updateModelViewMatrix(this.programNoise, this.modelViewMatrix, "uModelViewMatrix");  
+    this.updateModelViewMatrix(this.programMesh, this.modelViewMatrix, "uModelViewMatrix");
     
-            this.time += 0.01;
-            this.updateUniformTime(this.program, this.time, "uTime");
+    mat4.fromTranslation(this.modelViewMatrixClean, tv);
 
-            this.drawScene(this.modelViewMatrix);
+    this.updateModelViewMatrix(this.program, this.modelViewMatrix, "uModelViewMatrixClean");   
+    this.updateModelViewMatrix(this.programLines, this.modelViewMatrix, "uModelViewMatrixClean");   
+    this.updateModelViewMatrix(this.programNoise, this.modelViewMatrix, "uModelViewMatrixClean");  
+    this.updateModelViewMatrix(this.programMesh, this.modelViewMatrix, "uModelViewMatrixClean");
+
+    mat4.identity(this.normalMatrix);
+    mat4.invert(this.normalMatrix, this.modelViewMatrix);
+    mat4.transpose(this.normalMatrix, this.normalMatrix);
+
+    this.updateNormalMatrix(this.program, this.normalMatrix, "uNormalMatrix");            
+    this.updateNormalMatrix(this.programLines, this.normalMatrix, "uNormalMatrix");    
+    this.updateNormalMatrix(this.programNoise, this.normalMatrix, "uNormalMatrix");           
+    this.updateNormalMatrix(this.programMesh, this.normalMatrix, "uNormalMatrix");           
+
+    mat4.identity(this.projectionMatrix);  
+    mat4.perspective(this.projectionMatrix, this.fov * (Math.PI / 180), this.gl.canvas.width / this.gl.canvas.height, 0.1, 1000);
+
+    this.updateProjectionMatrix(this.program, this.projectionMatrix, "uProjectionMatrix");
+    this.updateProjectionMatrix(this.programLines, this.projectionMatrix, "uProjectionMatrix");
+    this.updateProjectionMatrix(this.programNoise, this.projectionMatrix, "uProjectionMatrix");
+    this.updateProjectionMatrix(this.programMesh, this.projectionMatrix, "uProjectionMatrix");
+
+    this.time += 0.01;
+    this.updateUniformTime(this.program, this.time, "uTime");
+
+    this.updateUniformValue(this.program, 'uLightPos', ['3f', this.lightPos[0], this.lightPos[1], this.lightPos[2]]);
+    this.updateUniformValue(this.programLines, 'uLightPos', ['3f', this.lightPos[0], this.lightPos[1], this.lightPos[2]]);
+    this.updateUniformValue(this.programNoise, 'uLightPos', ['3f', this.lightPos[0], this.lightPos[1], this.lightPos[2]]);
+    this.updateUniformValue(this.programMesh, 'uLightPos', ['3f', this.lightPos[0], this.lightPos[1], this.lightPos[2]]);
+
+    this.updateUniformValue(this.program, 'uKa', ['1f', this.ambientCoefficient]);
+    this.updateUniformValue(this.program, 'uKd', ['1f', this.diffuseCoefficient]);
+    this.updateUniformValue(this.program, 'uKs', ['1f', this.specularCoefficient]);
+    this.updateUniformValue(this.program, 'uNs', ['1f', this.shininess]);
+
+    this.drawScene(this.modelViewMatrix);
+
 
             // requestAnimationFrame(this.draw.bind(this));
         } 
@@ -335,7 +342,7 @@
                     step: 0.000001,
                     onChange(v, state){
                     obj.translationVector[i] = v;
-                    obj.draw(); 
+                    // obj.draw(); 
                     }
                 };
                 return result;
@@ -352,12 +359,74 @@
                         state['Rotate Y'],
                         state['Rotate Z']
                     ];
-                    obj.draw();  
+                    // obj.draw();  
 
                     }
                 };
                 return result;
                 }, {}),
+
+                ...['Light X', 'Light Y', 'Light Z'].reduce((result, name, i) => {
+            result[name] = {
+                value: obj.lightPos[i],
+                min: -100, 
+                max: 100, 
+                step: 0.000001,
+                onChange(v, state) {
+                    obj.lightPos[i] = v;
+                    obj.updateUniformValue(obj.program, 'uLightPos', ['3f', obj.lightPos[0], obj.lightPos[1], obj.lightPos[2]]);
+                }
+            };
+            return result;
+        }, {}),
+
+                'Ambient Coefficient (Ka)': {
+            value: obj.ambientCoefficient,
+            min: 0.0,
+            max: 1.0,
+            step: 0.01,
+            onChange(v, state) {
+                obj.ambientCoefficient = v;
+                // obj.updateUniformValue(obj.program, 'uKa', ['1f', obj.ambientCoefficient]);
+                // obj.draw();
+            }
+        },
+
+        'Diffuse Coefficient (Kd)': {
+            value: obj.diffuseCoefficient,
+            min: 0.0,
+            max: 1.0,
+            step: 0.01,
+            onChange(v, state) {
+                obj.diffuseCoefficient = v;
+                // obj.updateUniformValue(obj.program, 'uKd', ['1f', obj.diffuseCoefficient]);
+                // obj.draw();
+            }
+        },
+
+        'Specular Coefficient (Ks)': {
+            value: obj.specularCoefficient,
+            min: 0.0,
+            max: 1.0,
+            step: 0.01,
+            onChange(v, state) {
+                obj.specularCoefficient = v;
+                // obj.updateUniformValue(obj.program, 'uKs', ['1f', obj.specularCoefficient]);
+                // obj.draw();
+            }
+        },
+
+        'Shininess (ns)': {
+            value: obj.shininess,
+            min: 1.0,
+            max: 128.0,
+            step: 1.0,
+            onChange(v, state) {
+                obj.shininess = v;
+                // obj.updateUniformValue(obj.program, 'uNs', ['1f', obj.shininess]);
+                // obj.draw();
+            }
+        },
 
                 
                 'fov':{
@@ -367,7 +436,7 @@
                 step: 0.001,
                 onChange(v,state){
                     obj.fov = v;
-                    obj.draw();
+                    // obj.draw();
                 }
             }
         })

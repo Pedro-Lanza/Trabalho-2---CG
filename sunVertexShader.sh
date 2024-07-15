@@ -44,7 +44,7 @@
       );
       
 
-      vec4 normal = normalMatrix*vec4(-aVertexNormal,0.0);
+      vec4 normal = normalMatrix*vec4(aVertexNormal,0.0);
       vec4 light =  uModelViewMatrixClean*vec4(uLightPos,1.0);
       
       vColor = vec4(aVertexColor,1.0); 

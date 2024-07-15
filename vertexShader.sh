@@ -22,6 +22,10 @@
     uniform float uTime;  // Added for animation
     uniform float uRadius; // Radius of the orbit
     uniform float uSpeed;  // Speed of the orbit
+    uniform float uKa; // Ambient coefficient
+    uniform float uKd; // Diffuse coefficient
+    uniform float uKs; // Specular coefficient
+    uniform float uNs; // Shininess
 
 
     void main(void) {
@@ -53,11 +57,13 @@
       vec3 lightVec = normalize(vec3(light) - vec3(uModelViewMatrix * pos));
       vec3 eyeVec = normalize(vec3(uEyePos) - vec3(uModelViewMatrix * pos));
 
-      pos = selfRotation * pos; //update rotation only after the light direction is calculated
-      vec4 newPos = uProjectionMatrix*uModelViewMatrix * pos;
+      
 
       float lambert = dot(normalVec,lightVec);
       vec4 matDiff,matSpec;
+
+      pos = selfRotation * pos; //update rotation only after the light direction is calculated
+      vec4 newPos = uProjectionMatrix*uModelViewMatrix * pos;
 
       //Se houver textura, o material da superficie e definido pela cor dos vertices
       if (uTextureActive==0){
@@ -69,31 +75,26 @@
         matSpec = vec4(1.0,1.0,1.0,1.0);
       }
 
-      vec3 Ia; //Iluminacao ambiental
-      vec3 Id; //Iluminacao Difusa
-      vec3 Is; //Iluminacao Especular
-      float Ka = 0.3;
-      float Kd = 0.8;
-      float Ks = 1.0;
-      float ns = 8.0;
+      vec3 Ia; // Iluminacao ambiental
+      vec3 Id; // Iluminacao Difusa
+      vec3 Is; // Iluminacao Especular
 
-      //Calculo da compoenente ambiental
-      Ia = Ka*vec3(1.0,1.0,1.0);
+      // Calculo da componente ambiental
+      Ia = uKa * vec3(1.0, 1.0, 1.0);
 
-      //Se o coeficiente de atenuacao difusa for positivo
-      if (lambert>0.0){//multiplica o coeficiente pelo material
-        vec3 refVec = reflect(lightVec,normalVec);
-        float angSpec = max(0.0,dot(refVec,eyeVec));
-          float specular = pow(angSpec,ns);
-          Id = Kd*vec3(lambert*matDiff);
-          Is = Ks*vec3(specular*matSpec);
-      }
-      else{//senao a iluminacao difusa e zero
-        Id = vec3(0.0,0.0,0.0);
-        Is = vec3(0.0,0.0,0.0);
+      // Se o coeficiente de atenuacao difusa for positivo
+      if (lambert > 0.0) { // multiplica o coeficiente pelo material
+          vec3 refVec = reflect(lightVec, normalVec);
+          float angSpec = max(0.0, dot(refVec, eyeVec));
+          float specular = pow(angSpec, uNs);
+          Id = uKd * vec3(lambert * matDiff);
+          Is = uKs * vec3(specular * matSpec);
+      } else { // senao a iluminacao difusa e zero
+          Id = vec3(0.0, 0.0, 0.0);
+          Is = vec3(0.0, 0.0, 0.0);
       }
 
-      vColor = vec4(Ia+Id+Is,1.0);
+      vColor = vec4(Ia + Id + Is, 1.0);
 
      
       gl_PointSize = 8.0;
